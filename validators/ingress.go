@@ -47,20 +47,24 @@ type PortMap struct {
 	Number int    `json:"number,omitempty"`
 }
 
-func (m *IngressManifest) PrintTopLevelManifest() {
+func (m IngressManifest) PrintTopLevelManifest() {
 	// TODO: better use of formatters
 	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
 	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
-	metadata := fmt.Sprintf("       Metadata: %+v\n", m.Metadata)
-	fmt.Println(apiVersion, kind, metadata)
+	name := fmt.Sprintf("           Name: %+v\n", m.Metadata.Name)
+	namespace := fmt.Sprintf("      Namespace: %+v\n", m.Metadata.Namespace)
+	annotations := fmt.Sprintf("    Annotations:")
+	fmt.Println(apiVersion, kind, name, namespace, annotations)
+	for k, v := range m.Metadata.Annotations {
+		fmt.Printf("                  %s: %s\n", k, v)
+	}
 }
 
-func (m *IngressManifest) PrintSpec() {
+func (m IngressManifest) PrintSpec() {
 	// TODO: better use of formatters
-	spec := m.Spec
-	for _, rule := range spec.Rules {
+	for _, rule := range m.Spec.Rules {
 		for _, path := range rule.HTTP.Paths {
-			fmt.Println("            Rule:")
+			fmt.Println("\n            Rule:")
 			fmt.Printf("                     Path: %s\n", path.Name)
 			fmt.Printf("                 PathType: %s\n", path.PathType)
 			fmt.Printf("                  Backend: %+v\n\n", path.Backend)

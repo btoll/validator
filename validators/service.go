@@ -24,7 +24,7 @@ type ServicePort struct {
 type ServiceSelector struct {
 }
 
-func (m *ServiceManifest) PrintTopLevelManifest() {
+func (m ServiceManifest) PrintTopLevelManifest() {
 	// TODO: better use of formatters
 	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
 	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
@@ -32,7 +32,7 @@ func (m *ServiceManifest) PrintTopLevelManifest() {
 	fmt.Println(apiVersion, kind, metadata)
 }
 
-func (m *ServiceManifest) PrintSpec() {
+func (m ServiceManifest) PrintSpec() {
 	// TODO: better use of formatters
 	spec := m.Spec
 	ports := fmt.Sprintf("           Ports: %+v\n", spec.Ports)

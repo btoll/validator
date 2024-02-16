@@ -3,36 +3,23 @@ package validators
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"regexp"
+	"strings"
 
 	"github.com/btoll/validator/lib"
 )
 
-// TODO
-var reDeployment = regexp.MustCompile(`"kind": "Deployment"`)
-var reIngress = regexp.MustCompile(`"kind": "Ingress"`)
-var reService = regexp.MustCompile(`"kind": "Service"`)
+var reKind = regexp.MustCompile(`"kind":\s"(?P<Kind>.*)",`)
 
-func InterleaveDocuments(d []Document) {
-	// This is janky.
-	m0 := d[0].Manifest
-	m1 := d[1].Manifest
-
-	m0.PrintTopLevelManifest()
-	m1.PrintTopLevelManifest()
-
-	m0.PrintSpec()
-	m1.PrintSpec()
-	//	PrintDeploymentSpec(m1.Spec)
-
-	//	PrintContainer(m0)
-	//
-	// PrintContainer(&s1.Template.Spec.Containers[0])
+type Manifest interface {
+	ConfigMapManifest | DeploymentManifest | IngressManifest | ServiceManifest
+	PrintTopLevelManifest()
+	PrintSpec()
 }
 
-type Document struct {
-	Name     string   `json:"filename"`
-	Manifest Manifest `json:"manifest"`
+type Document[T Manifest] struct {
+	Manifest T `json:"manifest"`
 }
 
 type Metadata struct {
@@ -43,38 +30,46 @@ type Metadata struct {
 
 type Labels map[string]string
 
-func NewDocument(filename string) *Document {
-	contents, err := lib.GetFileContents(filename)
-	// TODO I'm not crazy about the current error checking.
-	lib.CheckError(err)
-	var d Document
-	if reDeployment.Match(contents) {
-		d = Document{
-			Name:     filename,
-			Manifest: &DeploymentManifest{},
-		}
-	} else if reIngress.Match(contents) {
-		d = Document{
-			Name:     filename,
-			Manifest: &IngressManifest{},
-		}
-	} else {
-		d = Document{
-			Name:     filename,
-			Manifest: &ServiceManifest{},
+func (m *Document[T]) DecodeAndPrint(dec *json.Decoder) error {
+	err := dec.Decode(&m.Manifest)
+	if err != nil {
+		return err
+	}
+	m.Manifest.PrintTopLevelManifest()
+	m.Manifest.PrintSpec()
+	return nil
+}
+
+func New(filename string) {
+	b, _ := lib.GetFileContents(filename)
+	v := reKind.FindAllSubmatch(b, -1)
+
+	if len(v) > 0 {
+		dec := json.NewDecoder(strings.NewReader(string(b)))
+		var err error
+
+		for _, kind := range v {
+			switch string(kind[1]) {
+			case "ConfigMap":
+				var m Document[ConfigMapManifest]
+				err = m.DecodeAndPrint(dec)
+			case "Deployment":
+				var m Document[DeploymentManifest]
+				err = m.DecodeAndPrint(dec)
+			case "Ingress":
+				var m Document[IngressManifest]
+				err = m.DecodeAndPrint(dec)
+			case "Service":
+				var m Document[ServiceManifest]
+				err = m.DecodeAndPrint(dec)
+			}
+
+			fmt.Printf("----------------------------------------------\n\n")
+
+			if err == io.EOF {
+				// all done
+				break
+			}
 		}
 	}
-	err = json.Unmarshal(contents, &d.Manifest)
-	lib.CheckError(err)
-	return &d
-}
-
-func (d *Document) Print() {
-	d.Manifest.PrintTopLevelManifest()
-	d.Manifest.PrintSpec()
-	// PrintContainer(&d.Manifest.Spec.Template.Spec.Containers[0])
-}
-
-func (d *Document) String() string {
-	return fmt.Sprintf("%#v", d)
 }

@@ -20,6 +20,7 @@ type DeploymentSpec struct {
 type MatchLabels struct {
 	MatchLabel Labels `json:"matchLabels,omitempty"`
 }
+
 type PodSpec struct {
 	Metadata Metadata   `json:"metadata,omitempty"`
 	Spec     Containers `json:"spec,omitempty"`
@@ -62,7 +63,8 @@ type Resource struct {
 	Memory string `json:"memory,omitempty"`
 }
 
-func (m *DeploymentManifest) PrintTopLevelManifest() {
+func (m DeploymentManifest) PrintTopLevelManifest() {
+	//	fmt.Println(m)
 	// TODO: better use of formatters
 	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
 	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
@@ -70,7 +72,7 @@ func (m *DeploymentManifest) PrintTopLevelManifest() {
 	fmt.Println(apiVersion, kind, metadata)
 }
 
-func (m *DeploymentManifest) PrintSpec() {
+func (m DeploymentManifest) PrintSpec() {
 	// TODO: better use of formatters
 	spec := m.Spec
 	replicas := fmt.Sprintf("        Replicas: %d\n", spec.Replicas)
