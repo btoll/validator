@@ -18,7 +18,7 @@ type DeploymentSpec struct {
 }
 
 type MatchLabels struct {
-	MatchLabel Labels `json:"matchLabels,omitempty"`
+	MatchLabel Data `json:"matchLabels,omitempty"`
 }
 
 type PodSpec struct {
@@ -46,7 +46,7 @@ type EnvVar struct {
 }
 
 type EnvFrom struct {
-	ConfigMapRef Labels `json:"configMapRef,omitempty"`
+	ConfigMapRef Data `json:"configMapRef,omitempty"`
 }
 
 type Port struct {
@@ -68,8 +68,14 @@ func (m DeploymentManifest) PrintTopLevelManifest() {
 	// TODO: better use of formatters
 	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
 	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
-	metadata := fmt.Sprintf("       Metadata: %+v\n", m.Metadata)
-	fmt.Println(apiVersion, kind, metadata)
+	//	metadata := fmt.Sprintf("       Metadata: %+v\n", m.Metadata)
+	name := fmt.Sprintf("           Name: %+v\n", m.Metadata.Name)
+	namespace := fmt.Sprintf("      Namespace: %+v\n", m.Metadata.Namespace)
+	labels := fmt.Sprintf("         Labels:")
+	fmt.Println(apiVersion, kind, name, namespace, labels)
+	for k, v := range m.Metadata.Labels {
+		fmt.Printf("                  %s: %s\n", k, v)
+	}
 }
 
 func (m DeploymentManifest) PrintSpec() {

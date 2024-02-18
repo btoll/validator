@@ -11,7 +11,7 @@ type ServiceManifest struct {
 
 type ServiceSpec struct {
 	Ports    []ServicePort
-	Selector ServiceSelector
+	Selector Data
 	Type     string
 }
 
@@ -21,22 +21,25 @@ type ServicePort struct {
 	Protocol   string
 }
 
-type ServiceSelector struct {
-}
-
 func (m ServiceManifest) PrintTopLevelManifest() {
 	// TODO: better use of formatters
 	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
 	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
-	metadata := fmt.Sprintf("       Metadata: %+v\n", m.Metadata)
-	fmt.Println(apiVersion, kind, metadata)
+	//	metadata := fmt.Sprintf("       Metadata: %+v\n", m.Metadata)
+	name := fmt.Sprintf("           Name: %+v\n", m.Metadata.Name)
+	namespace := fmt.Sprintf("      Namespace: %+v\n", m.Metadata.Namespace)
+	labels := fmt.Sprintf("         Labels:")
+	fmt.Println(apiVersion, kind, name, namespace, labels)
+	for k, v := range m.Metadata.Labels {
+		fmt.Printf("                  %s: %s\n", k, v)
+	}
 }
 
 func (m ServiceManifest) PrintSpec() {
 	// TODO: better use of formatters
 	spec := m.Spec
 	ports := fmt.Sprintf("           Ports: %+v\n", spec.Ports)
-	selector := fmt.Sprintf("       Selector: %s\n", spec.Selector)
+	selector := fmt.Sprintf("       Selector: %+v\n", spec.Selector)
 	_type := fmt.Sprintf("           Type: %s\n", spec.Type)
 	fmt.Println(ports, selector, _type)
 }

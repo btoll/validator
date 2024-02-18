@@ -25,10 +25,10 @@ type Document[T Manifest] struct {
 type Metadata struct {
 	Name      string `json:"name,omitempty"`
 	Namespace string `json:"namespace,omitempty"`
-	Labels    Labels `json:"labels,omitempty"`
+	Labels    Data   `json:"labels,omitempty"`
 }
 
-type Labels map[string]string
+type Data map[string]string
 
 func (m *Document[T]) DecodeAndPrint(dec *json.Decoder) error {
 	err := dec.Decode(&m.Manifest)
