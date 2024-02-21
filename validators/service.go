@@ -1,11 +1,15 @@
 package validators
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/btoll/validator/lib"
+)
 
 type ServiceManifest struct {
-	APIVersion string      `json:"apiVersion"`
-	Kind       string      `json:"kind"`
-	Metadata   Metadata    `json:"metadata"`
+	APIVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	Metadata   `json:"metadata"`
 	Spec       ServiceSpec `json:"spec"`
 }
 
@@ -21,24 +25,23 @@ type ServicePort struct {
 	Protocol   string
 }
 
-func (m ServiceManifest) Print() {
-	// TODO: better use of formatters
-	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
-	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
-	//	metadata := fmt.Sprintf("       Metadata: %+v\n", m.Metadata)
-	name := fmt.Sprintf("           Name: %+v\n", m.Metadata.Name)
-	namespace := fmt.Sprintf("      Namespace: %+v\n", m.Metadata.Namespace)
-	labels := fmt.Sprintf("         Labels:")
-	fmt.Println(apiVersion, kind, name, namespace, labels)
-	for k, v := range m.Metadata.Labels {
-		fmt.Printf("                  %s: %s\n", k, v)
+func (m ServiceManifest) Write() {
+	properServiceName := lib.GetProperServiceName(m.Name)
+	m.Name = properServiceName
+
+	dir := fmt.Sprintf("build/%s/service", properServiceName)
+	err := lib.CreateBuildDir(dir)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	f, err := lib.CreateBuildFile(fmt.Sprintf("%s/local", dir))
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	err = tpl.ExecuteTemplate(f, "service.tpl", m)
+	if err != nil {
+		fmt.Println("err", err)
 	}
 
-	spec := m.Spec
-	ports := fmt.Sprintf("           Ports: %+v\n", spec.Ports)
-	selector := fmt.Sprintf("       Selector: %+v\n", spec.Selector)
-	_type := fmt.Sprintf("           Type: %s\n", spec.Type)
-	fmt.Println(ports, selector, _type)
-
-	PrintService(m.Metadata.Name)
+	PrintService(properServiceName)
 }

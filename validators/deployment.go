@@ -2,23 +2,25 @@ package validators
 
 import (
 	"fmt"
+
+	"github.com/btoll/validator/lib"
 )
 
 type DeploymentManifest struct {
-	APIVersion string         `json:"apiVersion"`
-	Kind       string         `json:"kind"`
-	Metadata   Metadata       `json:"metadata"`
+	APIVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	Metadata   `json:"metadata"`
 	Spec       DeploymentSpec `json:"spec"`
 }
 
 type DeploymentSpec struct {
-	Replicas int         `json:"replicas,omitempty"`
-	Selector MatchLabels `json:"selector,omitempty"`
-	Template PodSpec     `json:"template,omitempty"`
+	Replicas int           `json:"replicas,omitempty"`
+	Selector LabelSelector `json:"selector,omitempty"`
+	Template PodSpec       `json:"template,omitempty"`
 }
 
-type MatchLabels struct {
-	MatchLabel Data `json:"matchLabels,omitempty"`
+type LabelSelector struct {
+	MatchLabels Data `json:"matchLabels,omitempty"`
 }
 
 type PodSpec struct {
@@ -63,32 +65,23 @@ type Resource struct {
 	Memory string `json:"memory,omitempty"`
 }
 
-func (m DeploymentManifest) Print() {
-	// TODO: better use of formatters
-	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
-	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
-	name := fmt.Sprintf("           Name: %+v\n", m.Metadata.Name)
-	namespace := fmt.Sprintf("      Namespace: %+v\n", m.Metadata.Namespace)
-	labels := fmt.Sprintf("         Labels:")
-	fmt.Println(apiVersion, kind, name, namespace, labels)
-	for k, v := range m.Metadata.Labels {
-		fmt.Printf("                  %s: %s\n", k, v)
+func (m DeploymentManifest) Write() {
+	properServiceName := lib.GetProperServiceName(m.Name)
+	m.Name = properServiceName
+
+	dir := fmt.Sprintf("build/%s/deployment", properServiceName)
+	err := lib.CreateBuildDir(dir)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	f, err := lib.CreateBuildFile(fmt.Sprintf("%s/local", dir))
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	err = tpl.ExecuteTemplate(f, "deployment.tpl", m)
+	if err != nil {
+		fmt.Println("err", err)
 	}
 
-	spec := m.Spec
-	replicas := fmt.Sprintf("        Replicas: %d\n", spec.Replicas)
-	selector := fmt.Sprintf("       Selector: %+v\n", spec.Selector.MatchLabel)
-	fmt.Println(replicas, selector)
-
-	container := spec.Template.Spec.Containers[0]
-	name = fmt.Sprintf("            Name: %s\n", container.Name)
-	image := fmt.Sprintf("          Image: %s\n", container.Image)
-	imagePullPolicy := fmt.Sprintf("ImagePullPolicy: %s\n", container.ImagePullPolicy)
-	envVars := fmt.Sprintf("        EnvVars: %+v\n", container.EnvVars)
-	envFrom := fmt.Sprintf("        EnvFrom: %+v\n", container.EnvFrom)
-	ports := fmt.Sprintf("          Ports: %+v\n", container.Ports)
-	resources := fmt.Sprintf("      Resources: %+v\n", container.Resources)
-	fmt.Println(name, image, imagePullPolicy, envVars, envFrom, ports, resources)
-
-	PrintDeployment(m.Metadata.Name)
+	PrintDeployment(properServiceName)
 }

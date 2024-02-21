@@ -1,7 +1,8 @@
 CC      	= go
 PROGRAM		= validator
+BUILDDIR	= build
 
-.PHONY: build clean run
+.PHONY: build clean cleanBuild run
 
 build: $(PROGRAM)
 
@@ -11,5 +12,9 @@ $(PROGRAM):
 clean:
 	rm -f $(PROGRAM)
 
-run: clean build
+cleanBuild:
+	rm -rf $(BUILDDIR)
+
+
+run: cleanBuild clean build
 
