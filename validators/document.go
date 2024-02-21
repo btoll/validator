@@ -14,8 +14,9 @@ var reKind = regexp.MustCompile(`"kind":\s"(?P<Kind>.*)",`)
 
 type Manifest interface {
 	ConfigMapManifest | DeploymentManifest | IngressManifest | ServiceManifest
-	PrintTopLevelManifest()
-	PrintSpec()
+	Print()
+	// PrintTopLevelManifest()
+	// PrintSpec()
 }
 
 type Document[T Manifest] struct {
@@ -35,8 +36,9 @@ func (m *Document[T]) DecodeAndPrint(dec *json.Decoder) error {
 	if err != nil {
 		return err
 	}
-	m.Manifest.PrintTopLevelManifest()
-	m.Manifest.PrintSpec()
+	m.Manifest.Print()
+	//	m.Manifest.PrintTopLevelManifest()
+	//	m.Manifest.PrintSpec()
 	return nil
 }
 

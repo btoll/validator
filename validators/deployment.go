@@ -63,12 +63,10 @@ type Resource struct {
 	Memory string `json:"memory,omitempty"`
 }
 
-func (m DeploymentManifest) PrintTopLevelManifest() {
-	//	fmt.Println(m)
+func (m DeploymentManifest) Print() {
 	// TODO: better use of formatters
 	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
 	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
-	//	metadata := fmt.Sprintf("       Metadata: %+v\n", m.Metadata)
 	name := fmt.Sprintf("           Name: %+v\n", m.Metadata.Name)
 	namespace := fmt.Sprintf("      Namespace: %+v\n", m.Metadata.Namespace)
 	labels := fmt.Sprintf("         Labels:")
@@ -76,17 +74,14 @@ func (m DeploymentManifest) PrintTopLevelManifest() {
 	for k, v := range m.Metadata.Labels {
 		fmt.Printf("                  %s: %s\n", k, v)
 	}
-}
 
-func (m DeploymentManifest) PrintSpec() {
-	// TODO: better use of formatters
 	spec := m.Spec
 	replicas := fmt.Sprintf("        Replicas: %d\n", spec.Replicas)
-	selector := fmt.Sprintf("       Selector: %+v\n", spec.Selector)
+	selector := fmt.Sprintf("       Selector: %+v\n", spec.Selector.MatchLabel)
 	fmt.Println(replicas, selector)
 
 	container := spec.Template.Spec.Containers[0]
-	name := fmt.Sprintf("            Name: %s\n", container.Name)
+	name = fmt.Sprintf("            Name: %s\n", container.Name)
 	image := fmt.Sprintf("          Image: %s\n", container.Image)
 	imagePullPolicy := fmt.Sprintf("ImagePullPolicy: %s\n", container.ImagePullPolicy)
 	envVars := fmt.Sprintf("        EnvVars: %+v\n", container.EnvVars)
@@ -94,4 +89,6 @@ func (m DeploymentManifest) PrintSpec() {
 	ports := fmt.Sprintf("          Ports: %+v\n", container.Ports)
 	resources := fmt.Sprintf("      Resources: %+v\n", container.Resources)
 	fmt.Println(name, image, imagePullPolicy, envVars, envFrom, ports, resources)
+
+	PrintDeployment(m.Metadata.Name)
 }

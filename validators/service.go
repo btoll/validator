@@ -21,7 +21,7 @@ type ServicePort struct {
 	Protocol   string
 }
 
-func (m ServiceManifest) PrintTopLevelManifest() {
+func (m ServiceManifest) Print() {
 	// TODO: better use of formatters
 	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
 	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
@@ -33,13 +33,12 @@ func (m ServiceManifest) PrintTopLevelManifest() {
 	for k, v := range m.Metadata.Labels {
 		fmt.Printf("                  %s: %s\n", k, v)
 	}
-}
 
-func (m ServiceManifest) PrintSpec() {
-	// TODO: better use of formatters
 	spec := m.Spec
 	ports := fmt.Sprintf("           Ports: %+v\n", spec.Ports)
 	selector := fmt.Sprintf("       Selector: %+v\n", spec.Selector)
 	_type := fmt.Sprintf("           Type: %s\n", spec.Type)
 	fmt.Println(ports, selector, _type)
+
+	PrintService(m.Metadata.Name)
 }

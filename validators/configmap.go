@@ -9,7 +9,7 @@ type ConfigMapManifest struct {
 	Data       Data     `json:"data"`
 }
 
-func (m ConfigMapManifest) PrintTopLevelManifest() {
+func (m ConfigMapManifest) Print() {
 	// TODO: better use of formatters
 	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
 	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
@@ -25,8 +25,4 @@ func (m ConfigMapManifest) PrintTopLevelManifest() {
 	for k, v := range m.Data {
 		fmt.Printf("                  %s: %s\n", k, v)
 	}
-}
-
-func (m ConfigMapManifest) PrintSpec() {
-	fmt.Println()
 }

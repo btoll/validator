@@ -47,7 +47,7 @@ type PortMap struct {
 	Number int    `json:"number,omitempty"`
 }
 
-func (m IngressManifest) PrintTopLevelManifest() {
+func (m IngressManifest) Print() {
 	// TODO: better use of formatters
 	apiVersion := fmt.Sprintf("      APIVersion: %s\n", m.APIVersion)
 	kind := fmt.Sprintf("           Kind: %s\n", m.Kind)
@@ -58,10 +58,7 @@ func (m IngressManifest) PrintTopLevelManifest() {
 	for k, v := range m.Metadata.Annotations {
 		fmt.Printf("                  %s: %s\n", k, v)
 	}
-}
 
-func (m IngressManifest) PrintSpec() {
-	// TODO: better use of formatters
 	for _, rule := range m.Spec.Rules {
 		for _, path := range rule.HTTP.Paths {
 			fmt.Println("\n            Rule:")
@@ -70,4 +67,6 @@ func (m IngressManifest) PrintSpec() {
 			fmt.Printf("                  Backend: %+v\n\n", path.Backend)
 		}
 	}
+
+	PrintIngress(m.Metadata.Name)
 }
