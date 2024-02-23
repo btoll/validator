@@ -58,14 +58,14 @@ func (m IngressManifest) Write() {
 	if err != nil {
 		fmt.Println("err", err)
 	}
-	f, err := lib.CreateBuildFile(fmt.Sprintf("%s/local", dir))
-	if err != nil {
-		fmt.Println("err", err)
-	}
-	err = tpl.ExecuteTemplate(f, "ingress.tpl", m)
-	if err != nil {
-		fmt.Println("err", err)
-	}
+	WriteTemplate(fmt.Sprintf("%s/local", dir), "ingress.tpl", m)
 
-	PrintIngress(properServiceName)
+	ingress, err := GetIngressClient(properServiceName)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	// This values are empty in the returned struct.
+	ingress.APIVersion = "networking.k8s.io/v1"
+	ingress.Kind = "Ingress"
+	WriteTemplate(fmt.Sprintf("%s/remote", dir), "ingress.tpl", ingress)
 }

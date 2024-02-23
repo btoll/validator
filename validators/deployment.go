@@ -65,6 +65,18 @@ type Resource struct {
 	Memory string `json:"memory,omitempty"`
 }
 
+func WriteTemplate(to, from string, T any) error {
+	f, err := lib.CreateBuildFile(to)
+	if err != nil {
+		return err
+	}
+	err = tpl.ExecuteTemplate(f, from, T)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m DeploymentManifest) Write() {
 	properServiceName := lib.GetProperServiceName(m.Name)
 	m.Name = properServiceName
@@ -74,14 +86,14 @@ func (m DeploymentManifest) Write() {
 	if err != nil {
 		fmt.Println("err", err)
 	}
-	f, err := lib.CreateBuildFile(fmt.Sprintf("%s/local", dir))
-	if err != nil {
-		fmt.Println("err", err)
-	}
-	err = tpl.ExecuteTemplate(f, "deployment.tpl", m)
-	if err != nil {
-		fmt.Println("err", err)
-	}
+	WriteTemplate(fmt.Sprintf("%s/local", dir), "deployment.tpl", m)
 
-	PrintDeployment(properServiceName)
+	deployment, err := GetDeploymentClient(properServiceName)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	// This values are empty in the returned struct.
+	deployment.APIVersion = "apps/v1"
+	deployment.Kind = "Deployment"
+	WriteTemplate(fmt.Sprintf("%s/remote", dir), "deployment.tpl", deployment)
 }

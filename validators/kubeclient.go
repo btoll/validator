@@ -2,11 +2,13 @@ package validators
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -35,68 +37,29 @@ func GetClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func PrintDeployment(deploymentName string) {
+func GetDeploymentClient(kind string) (*v1.Deployment, error) {
 	clientset, err := GetClient()
+	if err != nil {
+		return nil, err
+	}
 	deploymentsClient := clientset.AppsV1().Deployments("default")
-	deployment, err := deploymentsClient.Get(context.TODO(), deploymentName, metav1.GetOptions{})
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// This values are empty in the returned struct.
-	deployment.APIVersion = "apps/v1"
-	deployment.Kind = "Deployment"
-
-	f, err := os.Create(fmt.Sprintf("build/%s/deployment/remote", deploymentName))
-	if err != nil {
-		fmt.Println("err", err)
-	}
-	err = tpl.ExecuteTemplate(f, "deployment.tpl", deployment)
-	if err != nil {
-		fmt.Println("err", err)
-	}
+	return deploymentsClient.Get(context.TODO(), kind, metav1.GetOptions{})
 }
 
-func PrintIngress(ingressName string) {
+func GetIngressClient(kind string) (*networkingv1.Ingress, error) {
 	clientset, err := GetClient()
+	if err != nil {
+		return nil, err
+	}
 	ingressClient := clientset.NetworkingV1().Ingresses("default")
-	ingress, err := ingressClient.Get(context.TODO(), ingressName, metav1.GetOptions{})
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// This values are empty in the returned struct.
-	ingress.APIVersion = "networking.k8s.io/v1"
-	ingress.Kind = "Ingress"
-
-	f, err := os.Create(fmt.Sprintf("build/%s/ingress/remote", ingressName))
-	if err != nil {
-		fmt.Println("err", err)
-	}
-	err = tpl.ExecuteTemplate(f, "ingress.tpl", ingress)
-	if err != nil {
-		fmt.Println("err", err)
-	}
+	return ingressClient.Get(context.TODO(), kind, metav1.GetOptions{})
 }
 
-func PrintService(serviceName string) {
+func GetServiceClient(kind string) (*corev1.Service, error) {
 	clientset, err := GetClient()
+	if err != nil {
+		return nil, err
+	}
 	servicesClient := clientset.CoreV1().Services("default")
-	service, err := servicesClient.Get(context.TODO(), serviceName, metav1.GetOptions{})
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// This values are empty in the returned struct.
-	service.APIVersion = "v1"
-	service.Kind = "Service"
-
-	f, err := os.Create(fmt.Sprintf("build/%s/service/remote", serviceName))
-	if err != nil {
-		fmt.Println("err", err)
-	}
-	err = tpl.ExecuteTemplate(f, "service.tpl", service)
-	if err != nil {
-		fmt.Println("err", err)
-	}
+	return servicesClient.Get(context.TODO(), kind, metav1.GetOptions{})
 }

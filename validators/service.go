@@ -34,14 +34,14 @@ func (m ServiceManifest) Write() {
 	if err != nil {
 		fmt.Println("err", err)
 	}
-	f, err := lib.CreateBuildFile(fmt.Sprintf("%s/local", dir))
-	if err != nil {
-		fmt.Println("err", err)
-	}
-	err = tpl.ExecuteTemplate(f, "service.tpl", m)
-	if err != nil {
-		fmt.Println("err", err)
-	}
+	WriteTemplate(fmt.Sprintf("%s/local", dir), "service.tpl", m)
 
-	PrintService(properServiceName)
+	service, err := GetServiceClient(properServiceName)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	// This values are empty in the returned struct.
+	service.APIVersion = "v1"
+	service.Kind = "Service"
+	WriteTemplate(fmt.Sprintf("%s/remote", dir), "service.tpl", service)
 }
