@@ -16,20 +16,21 @@ type DeploymentManifest struct {
 type DeploymentSpec struct {
 	Replicas int           `json:"replicas,omitempty"`
 	Selector LabelSelector `json:"selector,omitempty"`
-	Template PodSpec       `json:"template,omitempty"`
+	Template Template      `json:"template,omitempty"`
 }
 
 type LabelSelector struct {
 	MatchLabels Data `json:"matchLabels,omitempty"`
 }
 
-type PodSpec struct {
-	Metadata Metadata   `json:"metadata,omitempty"`
-	Spec     Containers `json:"spec,omitempty"`
+type Template struct {
+	Metadata Metadata `json:"metadata,omitempty"`
+	Spec     PodSpec  `json:"spec,omitempty"`
 }
 
-type Containers struct {
-	Containers []Container `json:"containers,omitempty"`
+type PodSpec struct {
+	Containers   []Container `json:"containers,omitempty"`
+	NodeSelector Data
 }
 
 type Container struct {
