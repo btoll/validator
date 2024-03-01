@@ -26,17 +26,14 @@ type ServicePort struct {
 }
 
 func (m ServiceManifest) Write() {
-	properServiceName := lib.GetProperServiceName(m.Name)
-	m.Name = properServiceName
-
-	dir := fmt.Sprintf("build/%s/service", properServiceName)
+	dir := fmt.Sprintf("build/%s/service", m.Name)
 	err := lib.CreateBuildDir(dir)
 	if err != nil {
 		fmt.Println("err", err)
 	}
 	WriteTemplate(fmt.Sprintf("%s/local", dir), "service.tpl", m)
 
-	service, err := GetServiceClient(properServiceName)
+	service, err := GetServiceClient(m.Name)
 	if err != nil {
 		fmt.Println("err", err)
 	}

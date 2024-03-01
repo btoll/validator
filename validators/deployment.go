@@ -79,17 +79,14 @@ func WriteTemplate(to, from string, T any) error {
 }
 
 func (m DeploymentManifest) Write() {
-	properServiceName := lib.GetProperServiceName(m.Name)
-	m.Name = properServiceName
-
-	dir := fmt.Sprintf("build/%s/deployment", properServiceName)
+	dir := fmt.Sprintf("build/%s/deployment", m.Name)
 	err := lib.CreateBuildDir(dir)
 	if err != nil {
 		fmt.Println("err", err)
 	}
 	WriteTemplate(fmt.Sprintf("%s/local", dir), "deployment.tpl", m)
 
-	deployment, err := GetDeploymentClient(properServiceName)
+	deployment, err := GetDeploymentClient(m.Name)
 	if err != nil {
 		fmt.Println("err", err)
 	}

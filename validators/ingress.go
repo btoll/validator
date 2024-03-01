@@ -50,17 +50,14 @@ type ServiceBackendPort struct {
 }
 
 func (m IngressManifest) Write() {
-	properServiceName := lib.GetProperServiceName(m.Name)
-	m.Name = properServiceName
-
-	dir := fmt.Sprintf("build/%s/ingress", properServiceName)
+	dir := fmt.Sprintf("build/%s/ingress", m.Name)
 	err := lib.CreateBuildDir(dir)
 	if err != nil {
 		fmt.Println("err", err)
 	}
 	WriteTemplate(fmt.Sprintf("%s/local", dir), "ingress.tpl", m)
 
-	ingress, err := GetIngressClient(properServiceName)
+	ingress, err := GetIngressClient(m.Name)
 	if err != nil {
 		fmt.Println("err", err)
 	}
