@@ -2,6 +2,7 @@ package validators
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/btoll/validator/lib"
 )
@@ -37,7 +38,7 @@ type Container struct {
 	Name            string    `json:"name,omitempty"`
 	Image           string    `json:"image,omitempty"`
 	ImagePullPolicy string    `json:"imagePullPolicy,omitempty"`
-	EnvVars         []EnvVar  `json:"env,omitempty"`
+	Env             []EnvVar  `json:"env,omitempty"`
 	EnvFrom         []EnvFrom `json:"envFrom,omitempty"`
 	Ports           []Port    `json:"ports,omitempty"`
 	Resources       Resources `json:"resources,omitempty"`
@@ -84,8 +85,10 @@ func (m DeploymentManifest) Write() {
 	if err != nil {
 		fmt.Println("err", err)
 	}
+	// Recall, `ConfigMapEnvVars` has already been sorted.
+	// See the note in `validators/configmap` for more context.
+	m.Spec.Template.Spec.Containers[0].Env = ConfigMapEnvVars
 	WriteTemplate(fmt.Sprintf("%s/local", dir), "deployment.tpl", m)
-
 	deployment, err := GetDeploymentClient(m.Name)
 	if err != nil {
 		fmt.Println("err", err)
@@ -93,5 +96,12 @@ func (m DeploymentManifest) Write() {
 	// This values are empty in the returned struct.
 	deployment.APIVersion = "apps/v1"
 	deployment.Kind = "Deployment"
+	// There should always be an `.Env` property here.  If there is not,
+	// then this will fail and we can investigate.  This is a GOOD THING,
+	// since by design the Deployment should have the env vars embedded in it.
+	e := deployment.Spec.Template.Spec.Containers[0].Env
+	sort.Slice(e, func(i, j int) bool {
+		return e[i].Name < e[j].Name
+	})
 	WriteTemplate(fmt.Sprintf("%s/remote", dir), "deployment.tpl", deployment)
 }

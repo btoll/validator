@@ -15,7 +15,10 @@ Container:
 Name: {{ .Name }}
 Image: {{ .Image }}
 ImagePullPolicy: {{ .ImagePullPolicy }}
-EnvFrom: {{ .EnvFrom }}
+Env:
+{{- range .Env }}
+    {{ .Name }}={{ .Value }}
+{{- end }}
 Ports:
     {{- range .Ports -}}
     {{ .ContainerPort }}
