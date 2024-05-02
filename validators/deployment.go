@@ -31,17 +31,24 @@ type Template struct {
 
 type PodSpec struct {
 	Containers   []Container `json:"containers,omitempty"`
-	NodeSelector Data
+	Volumes      []Volume    `json:"volumes,omitempty"`
+	NodeSelector Data        `json:"nodeSelector,omitempty"`
+}
+
+type Volume struct {
+	Name         string      `json:"name,omitempty"`
+	VolumeSource interface{} `json:"volumeSource,omitempty"`
 }
 
 type Container struct {
-	Name            string    `json:"name,omitempty"`
-	Image           string    `json:"image,omitempty"`
-	ImagePullPolicy string    `json:"imagePullPolicy,omitempty"`
-	Env             []EnvVar  `json:"env,omitempty"`
-	EnvFrom         []EnvFrom `json:"envFrom,omitempty"`
-	Ports           []Port    `json:"ports,omitempty"`
-	Resources       Resources `json:"resources,omitempty"`
+	Name            string        `json:"name,omitempty"`
+	Image           string        `json:"image,omitempty"`
+	ImagePullPolicy string        `json:"imagePullPolicy,omitempty"`
+	Env             []EnvVar      `json:"env,omitempty"`
+	EnvFrom         []EnvFrom     `json:"envFrom,omitempty"`
+	Ports           []Port        `json:"ports,omitempty"`
+	Resources       Resources     `json:"resources,omitempty"`
+	VolumeMounts    []VolumeMount `json:"volumeMounts,omitempty"`
 }
 
 type EnvVar struct {
@@ -54,7 +61,7 @@ type EnvFrom struct {
 }
 
 type Port struct {
-	ContainerPort int `json:"container_port,omitempty"`
+	ContainerPort int `json:"containerPort,omitempty"`
 }
 
 type Resources struct {
@@ -65,6 +72,12 @@ type Resources struct {
 type Resource struct {
 	CPU    string `json:"cpu,omitempty"`
 	Memory string `json:"memory,omitempty"`
+}
+
+type VolumeMount struct {
+	Name      string `json:"name,omitempty"`
+	MountPath string `json:"mountPath,omitempty"`
+	SubPath   string `json:"subPath,omitempty"`
 }
 
 func WriteTemplate(to, from string, T any) error {
