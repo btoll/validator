@@ -93,6 +93,7 @@ func WriteTemplate(to, from string, T any) error {
 }
 
 func (m DeploymentManifest) Write() {
+	fmt.Println(m.Name)
 	dir := fmt.Sprintf("build/%s/deployment", m.Name)
 	err := lib.CreateBuildDir(dir)
 	if err != nil {
