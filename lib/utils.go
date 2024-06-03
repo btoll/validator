@@ -25,14 +25,6 @@ func CreateBuildDir(dir string) error {
 	return nil
 }
 
-func CreateBuildFile(fileName string) (*os.File, error) {
-	f, err := os.Create(fileName)
-	if err != nil {
-		return nil, err
-	}
-	return f, nil
-}
-
 func GetFileContents(filename string) ([]byte, error) {
 	if CheckFileExists(filename) {
 		return os.ReadFile(filename)

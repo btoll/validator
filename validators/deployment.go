@@ -2,6 +2,7 @@ package validators
 
 import (
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/btoll/validator/lib"
@@ -81,7 +82,7 @@ type VolumeMount struct {
 }
 
 func WriteTemplate(to, from string, T any) error {
-	f, err := lib.CreateBuildFile(to)
+	f, err := os.Create(to)
 	if err != nil {
 		return err
 	}
