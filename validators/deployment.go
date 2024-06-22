@@ -66,14 +66,11 @@ type Port struct {
 }
 
 type Resources struct {
-	Limits   Resource `json:"limits,omitempty"`
-	Requests Resource `json:"requests,omitempty"`
+	Limits   ResourceList `json:"limits,omitempty"`
+	Requests ResourceList `json:"requests,omitempty"`
 }
 
-type Resource struct {
-	CPU    string `json:"cpu,omitempty"`
-	Memory string `json:"memory,omitempty"`
-}
+type ResourceList map[string]string
 
 type VolumeMount struct {
 	Name      string `json:"name,omitempty"`

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/btoll/validator/lib"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 type ServiceManifest struct {
@@ -21,7 +22,7 @@ type ServiceSpec struct {
 
 type ServicePort struct {
 	Port       int
-	TargetPort int
+	TargetPort intstr.IntOrString
 	Protocol   string
 }
 
