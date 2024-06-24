@@ -55,7 +55,8 @@ func (m IngressManifest) Write() {
 	if err != nil {
 		fmt.Println("err", err)
 	}
-	WriteTemplate(fmt.Sprintf("%s/local", dir), "ingress.tpl", m)
+	localFile := fmt.Sprintf("%s/local", dir)
+	WriteTemplate(localFile, "ingress.tpl", m)
 
 	ingress, err := GetIngressClient(m.Name)
 	if err != nil {
@@ -64,5 +65,16 @@ func (m IngressManifest) Write() {
 	// This values are empty in the returned struct.
 	ingress.APIVersion = "networking.k8s.io/v1"
 	ingress.Kind = "Ingress"
-	WriteTemplate(fmt.Sprintf("%s/remote", dir), "ingress.tpl", ingress)
+	remoteFile := fmt.Sprintf("%s/remote", dir)
+	WriteTemplate(remoteFile, "ingress.tpl", ingress)
+	b, err := Validate(localFile, remoteFile)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	if b {
+		err = RemoveDir(dir, fmt.Sprintf("build/%s", m.Name))
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }

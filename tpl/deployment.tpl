@@ -11,7 +11,10 @@ Volumes:
     {{ $volumes := $spec.Template.Spec.Volumes }}
     {{- range $volumes -}}
     Name: {{ .Name }}
-    VolumeSource: {{ .VolumeSource }}
+    VolumeSource:
+        Server: {{ .NFS.Server }}
+        Path: {{ .NFS.Path }}
+        ReadOnly: {{ .NFS.ReadOnly }}
     {{- end }}
 
 NodeSelector: {{ $spec.Template.Spec.NodeSelector }}

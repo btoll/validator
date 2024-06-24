@@ -2,9 +2,11 @@ package validators
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
+	"os"
 	"regexp"
 	"strings"
 
@@ -78,4 +80,44 @@ func New(filename string) {
 			}
 		}
 	}
+}
+
+func RemoveDir(buildDir, serviceDir string) error {
+	err := os.RemoveAll(buildDir)
+	if err != nil {
+		return err
+	}
+	f, err := os.Open(serviceDir)
+	_, err = f.ReadDir(1)
+	if errors.Is(err, io.EOF) {
+		err := os.RemoveAll(serviceDir)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func Validate(localFile, remoteFile string) (bool, error) {
+	lb, err := os.ReadFile(localFile)
+	if err != nil {
+		return false, err
+	}
+	rb, err := os.ReadFile(remoteFile)
+	if err != nil {
+		return false, err
+	}
+	return string(lb) == string(rb), nil
+}
+
+func WriteTemplate(to, from string, T any) error {
+	f, err := os.Create(to)
+	if err != nil {
+		return err
+	}
+	err = tpl.ExecuteTemplate(f, from, T)
+	if err != nil {
+		return err
+	}
+	return nil
 }

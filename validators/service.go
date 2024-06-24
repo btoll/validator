@@ -32,7 +32,8 @@ func (m ServiceManifest) Write() {
 	if err != nil {
 		fmt.Println("err", err)
 	}
-	WriteTemplate(fmt.Sprintf("%s/local", dir), "service.tpl", m)
+	localFile := fmt.Sprintf("%s/local", dir)
+	WriteTemplate(localFile, "service.tpl", m)
 
 	service, err := GetServiceClient(m.Name)
 	if err != nil {
@@ -41,5 +42,16 @@ func (m ServiceManifest) Write() {
 	// This values are empty in the returned struct.
 	service.APIVersion = "v1"
 	service.Kind = "Service"
-	WriteTemplate(fmt.Sprintf("%s/remote", dir), "service.tpl", service)
+	remoteFile := fmt.Sprintf("%s/remote", dir)
+	WriteTemplate(remoteFile, "service.tpl", service)
+	b, err := Validate(localFile, remoteFile)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	if b {
+		err = RemoveDir(dir, fmt.Sprintf("build/%s", m.Name))
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }

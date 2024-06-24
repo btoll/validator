@@ -2,7 +2,6 @@ package validators
 
 import (
 	"fmt"
-	"os"
 	"sort"
 
 	"github.com/btoll/validator/lib"
@@ -37,8 +36,14 @@ type PodSpec struct {
 }
 
 type Volume struct {
-	Name         string      `json:"name,omitempty"`
-	VolumeSource interface{} `json:"volumeSource,omitempty"`
+	Name string           `json:"name,omitempty"`
+	NFS  *NFSVolumeSource `json:"nfs,omitempty"`
+}
+
+type NFSVolumeSource struct {
+	Server   string `json:"server,omitempty"`
+	Path     string `json:"path,omitempty"`
+	ReadOnly bool   `json:"read_only,omitempty"`
 }
 
 type Container struct {
@@ -78,18 +83,6 @@ type VolumeMount struct {
 	SubPath   string `json:"subPath,omitempty"`
 }
 
-func WriteTemplate(to, from string, T any) error {
-	f, err := os.Create(to)
-	if err != nil {
-		return err
-	}
-	err = tpl.ExecuteTemplate(f, from, T)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (m DeploymentManifest) Write() {
 	fmt.Println(m.Name)
 	dir := fmt.Sprintf("build/%s/deployment", m.Name)
@@ -100,7 +93,8 @@ func (m DeploymentManifest) Write() {
 	// Recall, `ConfigMapEnvVars` has already been sorted.
 	// See the note in `validators/configmap` for more context.
 	m.Spec.Template.Spec.Containers[0].Env = ConfigMapEnvVars
-	WriteTemplate(fmt.Sprintf("%s/local", dir), "deployment.tpl", m)
+	localFile := fmt.Sprintf("%s/local", dir)
+	WriteTemplate(localFile, "deployment.tpl", m)
 	deployment, err := GetDeploymentClient(m.Name)
 	if err != nil {
 		fmt.Println("err", err)
@@ -115,5 +109,16 @@ func (m DeploymentManifest) Write() {
 	sort.Slice(e, func(i, j int) bool {
 		return e[i].Name < e[j].Name
 	})
-	WriteTemplate(fmt.Sprintf("%s/remote", dir), "deployment.tpl", deployment)
+	remoteFile := fmt.Sprintf("%s/remote", dir)
+	WriteTemplate(remoteFile, "deployment.tpl", deployment)
+	b, err := Validate(localFile, remoteFile)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	if b {
+		err = RemoveDir(dir, fmt.Sprintf("build/%s", m.Name))
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }
