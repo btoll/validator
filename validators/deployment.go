@@ -68,11 +68,9 @@ type EnvFrom struct {
 }
 
 type Resources struct {
-	Limits   ResourceList `json:"limits,omitempty"`
-	Requests ResourceList `json:"requests,omitempty"`
+	Limits   v1.ResourceList `json:"limits,omitempty"`
+	Requests v1.ResourceList `json:"requests,omitempty"`
 }
-
-type ResourceList map[string]string
 
 type VolumeMount struct {
 	Name      string `json:"name,omitempty"`
