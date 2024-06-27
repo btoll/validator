@@ -30,8 +30,8 @@ Container:
         {{ .Name }}={{ .Value }}
         {{- end }}
     Ports:
-        {{- range .Ports -}}
-        {{ .ContainerPort }}
+        {{- range .Ports }}
+        - {{ .ContainerPort }}
         {{- end }}
     Resources:
         Limits:{{ .Resources.Limits }}
