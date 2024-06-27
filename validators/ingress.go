@@ -2,6 +2,7 @@ package validators
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/btoll/validator/lib"
 )
@@ -61,6 +62,12 @@ func (m IngressManifest) Write() {
 	ingress, err := GetIngressClient(m.Name)
 	if err != nil {
 		fmt.Println("err", err)
+	}
+	// Remove all Rancher `cattle` annotations.
+	for k := range ingress.Annotations {
+		if strings.Contains(k, "cattle") {
+			delete(ingress.Annotations, k)
+		}
 	}
 	// This values are empty in the returned struct.
 	ingress.APIVersion = "networking.k8s.io/v1"
