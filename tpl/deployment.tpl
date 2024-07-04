@@ -34,7 +34,7 @@ Container:
         - {{ .ContainerPort }}
         {{- end }}
     Resources:
-        Limits:{{ .Resources.Limits }}
+        Limits: {{ .Resources.Limits }}
         Requests: {{ .Resources.Requests }}
     VolumeMounts:
         {{- range .VolumeMounts }}
